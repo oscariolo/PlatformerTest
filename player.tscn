@@ -19,6 +19,9 @@ animations = [{
 [node name="Player" type="CharacterBody2D"]
 scale = Vector2(0.3, 0.3)
 script = ExtResource("1_gc4q0")
+jump_height = 50.0
+jump_time_to_peak = 0.75
+jump_time_to_descent = 0.5
 
 [node name="Animations" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4fh1c")
