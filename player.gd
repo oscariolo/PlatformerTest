@@ -5,7 +5,7 @@ var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 var facing_vector = Vector2(0,0)
 
 #GRAVITY AND HORIZONTAL MOVEMENT
-const MAX_FALL_SPEED = 200
+const MAX_FALL_SPEED = 350
 const MAX_WALK_SPEED = 300
 const acc = 50.0
 #JUMP MECHANIC
@@ -17,15 +17,15 @@ const acc = 50.0
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
 @onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
 
+var current_height = 0
 
 func _physics_process(delta):
 	facing_vector = Input.get_vector("move_left","move_right","look_up","look_down")
-	
 	#apply gravity 
 	#if velocity.y <= MAX_FALL_SPEED: #base 1
 		#velocity.y += gravity * delta
-	velocity.y += get_gravity() * delta
-	
+	if velocity.y < MAX_FALL_SPEED:
+		velocity.y += get_gravity() * delta
 	#walking
 	if facing_vector[0] == 1:
 		velocity.x = min(velocity.x + acc,MAX_WALK_SPEED)
@@ -34,8 +34,13 @@ func _physics_process(delta):
 	if facing_vector[0] == 0:
 		velocity.x = lerp(velocity.x,0.0,0.4)	
 	#jump
-	if Input.is_action_just_pressed("jump"):
+	if Input.is_action_just_pressed("jump") and is_on_floor():
 		_jump(delta)
+	if Input.is_action_just_released("jump"):
+		velocity.y = lerp(velocity.y,fall_gravity,0.05)
+	
+	if is_on_floor():
+		current_height = 0
 
 	move_and_slide()
 
