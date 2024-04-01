@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://c3ec5mu62cofr"]
+[gd_scene load_steps=5 format=3 uid="uid://c3ec5mu62cofr"]
 
 [ext_resource type="Texture2D" uid="uid://d00x7pebpcq5u" path="res://icon.svg" id="1_6fjsa"]
 [ext_resource type="Script" path="res://player.gd" id="1_gc4q0"]
-[ext_resource type="PackedScene" uid="uid://ks3np888t8pj" path="res://trail.tscn" id="3_t5vv2"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_4fh1c"]
 animations = [{
@@ -18,7 +17,6 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5rh6v"]
 
 [node name="Player" type="CharacterBody2D"]
-z_index = 1
 scale = Vector2(0.3, 0.3)
 script = ExtResource("1_gc4q0")
 jump_height = 80.0
@@ -42,10 +40,6 @@ wait_time = 0.3
 [node name="coyote_time" type="Timer" parent="."]
 wait_time = 0.3
 one_shot = true
-
-[node name="Trail" parent="." instance=ExtResource("3_t5vv2")]
-top_level = true
-visibility_layer = 2
 
 [connection signal="timeout" from="dash_time" to="." method="_on_dash_time_timeout"]
 [connection signal="timeout" from="coyote_time" to="." method="_on_coyote_time_timeout"]
