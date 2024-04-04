@@ -40,7 +40,7 @@ zoom = Vector2(1.5, 1.5)
 wait_time = 0.3
 
 [node name="coyote_time" type="Timer" parent="."]
-wait_time = 0.3
+wait_time = 0.1
 one_shot = true
 
 [node name="Trail" parent="." instance=ExtResource("3_t5vv2")]
