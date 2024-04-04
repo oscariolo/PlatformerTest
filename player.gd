@@ -25,9 +25,6 @@ var direction = 0
 var is_dashing = false
 var can_dash = true
 var jump_timer = 0.0
-#coyote time
-var coyote_time = 0.0
-var can_coyote_jump = true
 
 func _process(delta):
 	facing_vector = Input.get_vector("move_left","move_right","look_up","look_down")
@@ -45,7 +42,7 @@ func _process(delta):
 		last_x_input.erase(1.0)
 	
 func _physics_process(delta):
-	#print(position)
+	print(position)
 	#apply gravity 
 	if velocity.y < MAX_FALL_SPEED:
 		velocity.y += get_gravity() * delta
@@ -53,14 +50,7 @@ func _physics_process(delta):
 	#restart when floor
 	if is_on_floor():
 		can_dash = true
-		can_coyote_jump = true
 	
-	if not is_on_floor() and can_coyote_jump and $coyote_time.is_stopped():
-		$coyote_time.start()
-		print("coyote time started")
-			
-			
-
 	#walk
 	if not is_dashing:
 		_walk(delta)
@@ -74,15 +64,7 @@ func _physics_process(delta):
 	jump_timer -= delta
 	if jump_timer > 0 and is_on_floor():
 		_jump(delta)
-		can_coyote_jump = false
 		jump_timer = 0.0
-	if jump_timer > 0 and can_coyote_jump:
-		_jump(delta)
-		can_coyote_jump = false
-		jump_timer = 0.0
-		
-	
-		
 		
 	if Input.is_action_just_released("jump"):
 		if velocity.y < MAX_FALL_SPEED:
@@ -128,6 +110,5 @@ func _on_area_2d_body_entered(body):
 
 
 func _on_coyote_time_timeout():
-	print("coyote timeout")
-	can_coyote_jump = false
+	pass
 
