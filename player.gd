@@ -24,10 +24,9 @@ var direction = 0
 #dash variables
 var is_dashing = false
 var can_dash = true
-var jump_timer = 0.0
+var jump_timer_buffer = 0.0
 #coyote time
-var coyote_time = 0.0
-var can_coyote_jump = true
+
 
 func _process(delta):
 	facing_vector = Input.get_vector("move_left","move_right","look_up","look_down")
@@ -53,14 +52,7 @@ func _physics_process(delta):
 	#restart when floor
 	if is_on_floor():
 		can_dash = true
-		can_coyote_jump = true
-	
-	if not is_on_floor() and can_coyote_jump and $coyote_time.is_stopped():
-		$coyote_time.start()
-		print("coyote time started")
-			
-			
-
+		
 	#walk
 	if not is_dashing:
 		_walk(delta)
@@ -70,28 +62,24 @@ func _physics_process(delta):
 	
 	#jump
 	if Input.is_action_just_pressed("jump"):
-		jump_timer = 0.1
-	jump_timer -= delta
-	if jump_timer > 0 and is_on_floor():
-		_jump(delta)
-		can_coyote_jump = false
-		jump_timer = 0.0
-	if jump_timer > 0 and can_coyote_jump:
-		_jump(delta)
-		can_coyote_jump = false
-		jump_timer = 0.0
-		
-	
-		
+		jump_timer_buffer = 0.1
+	jump_timer_buffer -= delta
+	if jump_timer_buffer > 0:
+		if is_on_floor() or $coyote_time.time_left > 0.0:
+			_jump(delta)
 		
 	if Input.is_action_just_released("jump"):
 		if velocity.y < MAX_FALL_SPEED:
 			velocity.y = lerp(velocity.y,fall_gravity,0.05)
-	
 	#dash
 	if Input.is_action_just_pressed("dash"):
 		_dash(delta)
+	
+	var was_on_floor = is_on_floor()
 	move_and_slide()
+	var just_left_ledge = was_on_floor and not is_on_floor() and velocity.y >=0
+	if just_left_ledge:
+		$coyote_time.start()
 
 func _walk(delta):
 	var acc
@@ -108,6 +96,7 @@ func _walk(delta):
 	
 func _jump(delta):
 	velocity.y = jump_velocity
+	jump_timer_buffer = 0.0
 	
 func _dash(delta):	
 	if can_dash and not is_dashing:
@@ -126,8 +115,6 @@ func _on_dash_time_timeout():
 func _on_area_2d_body_entered(body):
 	position = Vector2(0,0)
 
-
 func _on_coyote_time_timeout():
-	print("coyote timeout")
-	can_coyote_jump = false
+	pass
 
