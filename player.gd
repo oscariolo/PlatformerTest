@@ -2,8 +2,8 @@ extends CharacterBody2D
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
-var facing_vector = Vector2(0,0)
 var last_x_input = [0]
+var last_y_input = [0]
 
 #GRAVITY AND HORIZONTAL MOVEMENT
 const MAX_FALL_SPEED = 350.0
@@ -13,7 +13,7 @@ const MAX_WALK_SPEED = 300.0
 @export var jump_height : float
 @export var jump_time_to_peak : float
 @export var jump_time_to_descent : float
-@export var dash_boost : Vector2
+
 
 @onready var jump_velocity : float = ((2.0 * jump_height) / jump_time_to_peak) * -1.0
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
@@ -24,13 +24,18 @@ var direction = 0
 #dash variables
 var is_dashing = false
 var can_dash = true
+var dash_vector = Vector2()
+@export var dash_height : float
+@export var dash_time_to_peak : float
+@export var dash_on_x : float
+#@export var dash_boost : Vector2
+@onready var dash_boost: Vector2 = Vector2(dash_on_x,((2.0 * dash_height) / dash_time_to_peak))
+#jump buffer timer
 var jump_timer_buffer = 0.0
 #coyote time
 
 
-func _process(delta):
-	facing_vector = Input.get_vector("move_left","move_right","look_up","look_down")
-	
+func _process(delta):	
 	if Input.is_action_just_pressed("move_left"):
 		if -1.0 not in last_x_input:
 			last_x_input.append(-1.0)
@@ -38,27 +43,37 @@ func _process(delta):
 		if 1.0 not in last_x_input:
 			last_x_input.append(1.0)
 	
+	if Input.is_action_just_pressed("look_up"):
+		if -1.0 not in last_y_input:
+			last_y_input.append(-1.0)
+	if Input.is_action_just_pressed("look_down"):
+		if 1.0 not in last_y_input:
+			last_y_input.append(1.0)
+	
 	if Input.is_action_just_released("move_left"):
 		last_x_input.erase(-1.0)
 	if Input.is_action_just_released("move_right"):
 		last_x_input.erase(1.0)
+	if Input.is_action_just_released("look_up"):
+		last_y_input.erase(-1.0)
+	if Input.is_action_just_released("look_down"):
+		last_y_input.erase(1.0)
 	
 func _physics_process(delta):
 	#print(position)
 	#apply gravity 
+	
 	if velocity.y < MAX_FALL_SPEED:
 		velocity.y += get_gravity() * delta
-	
 	#restart when floor
-	if is_on_floor():
+	if is_on_floor() and not is_dashing:
 		can_dash = true
 		
 	#walk
 	if not is_dashing:
 		_walk(delta)
-	else:
-		#dashing movement
-		velocity = dash_boost * facing_vector.sign() 
+	if is_dashing:
+		velocity = dash_boost * dash_vector
 	
 	#jump
 	if Input.is_action_just_pressed("jump"):
@@ -67,7 +82,6 @@ func _physics_process(delta):
 	if jump_timer_buffer > 0:
 		if is_on_floor() or $coyote_time.time_left > 0.0:
 			_jump(delta)
-		
 	if Input.is_action_just_released("jump"):
 		if velocity.y < MAX_FALL_SPEED:
 			velocity.y = lerp(velocity.y,fall_gravity,0.05)
@@ -93,13 +107,14 @@ func _walk(delta):
 		velocity.x = max(velocity.x - acc,-MAX_WALK_SPEED)
 	if last_x_input.back() == 0:
 		velocity.x = lerp(velocity.x,0.0,0.4)	
-	
+	Vector2(last_x_input.back(),last_y_input.back())
 func _jump(delta):
 	velocity.y = jump_velocity
 	jump_timer_buffer = 0.0
 	
 func _dash(delta):	
 	if can_dash and not is_dashing:
+		dash_vector = Vector2(last_x_input.back(),last_y_input.back())
 		is_dashing = true
 		can_dash = false
 		$dash_time.start()

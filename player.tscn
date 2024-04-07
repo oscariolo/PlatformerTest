@@ -24,7 +24,9 @@ script = ExtResource("1_gc4q0")
 jump_height = 80.0
 jump_time_to_peak = 0.3
 jump_time_to_descent = 0.2
-dash_boost = Vector2(800, 700)
+dash_height = 80.0
+dash_time_to_peak = 0.5
+dash_on_x = 800.0
 
 [node name="Animations" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4fh1c")
