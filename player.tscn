@@ -24,9 +24,9 @@ script = ExtResource("1_gc4q0")
 jump_height = 80.0
 jump_time_to_peak = 0.3
 jump_time_to_descent = 0.2
-dash_height = 80.0
-dash_time_to_peak = 0.5
-dash_on_x = 800.0
+dash_height = 125.0
+dash_time_to_peak = 0.2
+dash_speed_on_x = 800.0
 
 [node name="Animations" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4fh1c")
@@ -34,9 +34,6 @@ sprite_frames = SubResource("SpriteFrames_4fh1c")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(6.445, 6.445)
 shape = SubResource("RectangleShape2D_5rh6v")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.5, 1.5)
 
 [node name="dash_time" type="Timer" parent="."]
 wait_time = 0.3

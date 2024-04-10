@@ -13,23 +13,21 @@ const MAX_WALK_SPEED = 300.0
 @export var jump_height : float
 @export var jump_time_to_peak : float
 @export var jump_time_to_descent : float
-
-
 @onready var jump_velocity : float = ((2.0 * jump_height) / jump_time_to_peak) * -1.0
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
 @onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
-
 var direction = 0
-
 #dash variables
 var is_dashing = false
 var can_dash = true
 var dash_vector = Vector2()
+var dash_vector_frame_window : int
 @export var dash_height : float
 @export var dash_time_to_peak : float
-@export var dash_on_x : float
+@onready var dash_gravity : float = ((-2.0 * dash_height) / (dash_time_to_peak * dash_time_to_peak)) * -1.0
 #@export var dash_boost : Vector2
-@onready var dash_boost: Vector2 = Vector2(dash_on_x,((2.0 * dash_height) / dash_time_to_peak))
+@onready var dash_speed_on_y: float = ((2.0 * dash_height) / dash_time_to_peak) 
+@export var dash_speed_on_x : float 
 #jump buffer timer
 var jump_timer_buffer = 0.0
 #coyote time
@@ -62,18 +60,26 @@ func _process(delta):
 func _physics_process(delta):
 	#print(position)
 	#apply gravity 
-	
 	if velocity.y < MAX_FALL_SPEED:
 		velocity.y += get_gravity() * delta
+	
 	#restart when floor
 	if is_on_floor() and not is_dashing:
 		can_dash = true
 		
 	#walk
+	var threshold = 100
 	if not is_dashing:
 		_walk(delta)
+	
 	if is_dashing:
-		velocity = dash_boost * dash_vector
+		if dash_vector_frame_window > 0:
+			dash_vector = Vector2(last_x_input.back(),last_y_input.back())
+			dash_vector_frame_window -= 1
+		if dash_vector_frame_window == 0:
+			velocity.x = dash_speed_on_x * dash_vector[0]
+			velocity.y = dash_speed_on_y * dash_vector[1]
+			dash_vector_frame_window = -1
 	
 	#jump
 	if Input.is_action_just_pressed("jump"):
@@ -82,7 +88,7 @@ func _physics_process(delta):
 	if jump_timer_buffer > 0:
 		if is_on_floor() or $coyote_time.time_left > 0.0:
 			_jump(delta)
-	if Input.is_action_just_released("jump"):
+	if Input.is_action_just_released("jump") and not is_dashing:
 		if velocity.y < MAX_FALL_SPEED:
 			velocity.y = lerp(velocity.y,fall_gravity,0.05)
 	#dash
@@ -107,21 +113,27 @@ func _walk(delta):
 		velocity.x = max(velocity.x - acc,-MAX_WALK_SPEED)
 	if last_x_input.back() == 0:
 		velocity.x = lerp(velocity.x,0.0,0.4)	
-	Vector2(last_x_input.back(),last_y_input.back())
+			
 func _jump(delta):
 	velocity.y = jump_velocity
 	jump_timer_buffer = 0.0
 	
 func _dash(delta):	
 	if can_dash and not is_dashing:
-		dash_vector = Vector2(last_x_input.back(),last_y_input.back())
+		dash_vector_frame_window = 3
 		is_dashing = true
 		can_dash = false
 		$dash_time.start()
 	
 func get_gravity() -> float:
-	return jump_gravity if velocity.y < 0.0 else fall_gravity
-
+	if not is_dashing:
+		return jump_gravity if velocity.y < 0.0 else fall_gravity
+	else:
+		if dash_vector.y == 0:
+			return 0
+		else:
+			return dash_gravity
+	
 
 func _on_dash_time_timeout():
 	is_dashing = false
